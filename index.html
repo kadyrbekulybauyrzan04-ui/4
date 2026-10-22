@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathKids - Математикалық Көмекші</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-indigo-700 min-h-screen flex justify-center items-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[650px]">
+        
+        <!-- Тақырып бөлігі -->
+        <div class="bg-indigo-600 text-white p-6 text-center rounded-b-3xl shadow-md">
+            <h1 class="text-2xl font-bold">🧮 MathKids Mobile</h1>
+            <p class="text-xs text-indigo-200 mt-1">Оқушыларға арналған математика көмекшісі</p>
+            
+            <!-- Мәзір түймелері -->
+            <div class="flex justify-center gap-2 mt-4">
+                <button onclick="switchTab('calc')" id="btnCalc" class="px-4 py-1.5 text-xs font-semibold rounded-full bg-white text-indigo-700 shadow transition">Калькулятор</button>
+                <button onclick="switchTab('quiz')" id="btnQuiz" class="px-4 py-1.5 text-xs font-semibold rounded-full bg-indigo-700 text-white border border-indigo-400 transition">Тренажер</button>
+            </div>
+        </div>
+
+        <!-- Негізгі контент аймағы -->
+        <div class="p-6 flex-1 overflow-y-auto">
+            
+            <!-- 1. КАЛЬКУЛЯТОР БӨЛІМІ -->
+            <div id="calcTab" class="space-y-4">
+                <h2 class="text-sm font-bold text-gray-700">Сандар мен амалды таңдаңыз:</h2>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-500 font-medium">Бірінші сан:</label>
+                        <input type="number" id="num1" placeholder="Мысалы: 12" class="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 font-medium">Математикалық амал:</label>
+                        <select id="operator" class="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-lg">
+                            <option value="+">➕ Қосу (+)</option>
+                            <option value="-">➖ Алу (-)</option>
+                            <option value="*">✖️ Көбейту (×)</option>
+                            <option value="/">➗ Бөлу (÷)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 font-medium">Екінші сан:</label>
+                        <input type="number" id="num2" placeholder="Мысалы: 4" class="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg">
+                    </div>
+
+                    <button onclick="calculate()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200">
+                        Есептеу
+                    </button>
+                </div>
+
+                <!-- Нәтиже -->
+                <div id="calcResult" class="hidden mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-center">
+                    <p class="text-xs text-indigo-500 uppercase tracking-wider font-bold">Нәтиже:</p>
+                    <p id="resultText" class="text-2xl font-bold text-indigo-900 mt-1"></p>
+                </div>
+            </div>
+
+            <!-- 2. ВИКТОРИНА / ТРЕНАЖЕР БӨЛІМІ -->
+            <div id="quizTab" class="hidden space-y-4 flex flex-col h-full justify-between">
+                <div>
+                    <div class="flex justify-between items-center bg-gray-100 p-3 rounded-xl">
+                        <span class="text-xs font-bold text-gray-600">Ұпай: <span id="score" class="text-indigo-600 text-base">0</span></span>
+                        <span class="text-xs font-bold text-gray-600">Сұрақ: <span id="questionCount" class="text-indigo-600 text-base">1</span>/5</span>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <p class="text-xs text-gray-400 uppercase tracking-widest font-semibold">Мыسالды шеш:</p>
+                        <h3 id="quizQuestion" class="text-4xl font-extrabold text-gray-800 my-4">5 + 3 = ?</h3>
+                        
+                        <input type="number" id="quizAnswer" placeholder="Жауабы..." class="w-full max-w-xs mx-auto px-4 py-3 border-2 border-indigo-200 rounded-xl text-center text-xl focus:outline-none focus:border-indigo-600">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="checkQuizAnswer()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                        Тексеру
+                    </button>
+                    <div id="quizFeedback" class="text-center text-sm font-semibold h-6"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Төменгі footer -->
+        <div class="bg-gray-50 py-3 text-center text-xs text-gray-400 border-t">
+            MathKids v1.0 • GitHub Mobile App
+        </div>
+
+    </div>
+
+    <!-- JavaScript логикасы -->
+    <script>
+        // Қойындыларды ауыстыру
+        function switchTab(tab) {
+            const calcTab = document.getElementById('calcTab');
+            const quizTab = document.getElementById('quizTab');
+            const btnCalc = document.getElementById('btnCalc');
+            const btnQuiz = document.getElementById('btnQuiz');
+
+            if (tab === 'calc') {
+                calcTab.classList.remove('hidden');
+                quizTab.classList.add('hidden');
+                btnCalc.className = "px-4 py-1.5 text-xs font-semibold rounded-full bg-white text-indigo-700 shadow transition";
+                btnQuiz.className = "px-4 py-1.5 text-xs font-semibold rounded-full bg-indigo-700 text-white border border-indigo-400 transition";
+            } else {
+                calcTab.classList.add('hidden');
+                quizTab.classList.remove('hidden');
+                btnQuiz.className = "px-4 py-1.5 text-xs font-semibold rounded-full bg-white text-indigo-700 shadow transition";
+                btnCalc.className = "px-4 py-1.5 text-xs font-semibold rounded-full bg-indigo-700 text-white border border-indigo-400 transition";
+                startQuiz();
+            }
+        }
+
+        // Калькулятор функциясы
+        function calculate() {
+            const n1 = parseFloat(document.getElementById('num1').value);
+            const n2 = parseFloat(document.getElementById('num2').value);
+            const op = document.getElementById('operator').value;
+            const resDiv = document.getElementById('calcResult');
+            const resText = document.getElementById('resultText');
+
+            if (isNaN(n1) || isNaN(n2)) {
+                alert('Екі санды да енгізіңіз!');
+                return;
+            }
+
+            let res;
+            switch(op) {
+                case '+': res = n1 + n2; break;
+                case '-': res = n1 - n2; break;
+                case '*': res = n1 * n2; break;
+                case '/': 
+                    if(n2 === 0) {
+                        alert('Нөлге бөлуге болмайды!');
+                        return;
+                    }
+                    res = n1 / n2; 
+                    res = Number.isInteger(res) ? res : res.toFixed(2);
+                    break;
+            }
+
+            resText.innerText = `${n1} ${op} ${n2} = ${res}`;
+            resDiv.classList.remove('hidden');
+        }
+
+        // Викторина айнымалылары
+        let currentScore = 0;
+        let currentQNum = 1;
+        let correctAnswer = 0;
+
+        function startQuiz() {
+            if (currentQNum > 5) {
+                document.getElementById('quizTab').innerHTML = `
+                    <div class="text-center py-12 space-y-4">
+                        <h3 class="text-2xl font-bold text-indigo-600">🎉 Ойын аяқталды!</h3>
+                        <p class="text-gray-600">Сіздің жинаған ұпайыңыз: <span class="font-bold text-xl text-indigo-800">${currentScore} / 5</span></p>
+                        <button onclick="resetQuiz()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow">Қайта бастау</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const ops = ['+', '-', '*'];
+            const randomOp = ops[Math.floor(Math.random() * ops.length)];
+            let n1 = Math.floor(Math.random() * 10) + 1;
+            let n2 = Math.floor(Math.random() * 10) + 1;
+
+            if (randomOp === '-' && n1 < n2) {
+                let temp = n1; n1 = n2; n2 = temp; // Теріс сан шықпау үшін
+            }
+
+            if (randomOp === '*') {
+                n1 = Math.floor(Math.random() * 5) + 1;
+                n2 = Math.floor(Math.random() * 5) + 1;
+            }
+
+            switch(randomOp) {
+                case '+': correctAnswer = n1 + n2; break;
+                case '-': correctAnswer = n1 - n2; break;
+                case '*': correctAnswer = n1 * n2; break;
+            }
+
+            document.getElementById('quizQuestion').innerText = `${n1} ${randomOp === '*' ? '×' : randomOp} ${n2} = ?`;
+            document.getElementById('questionCount').innerText = currentQNum;
+            document.getElementById('score').innerText = currentScore;
+            document.getElementById('quizAnswer').value = '';
+            document.getElementById('quizFeedback').innerText = '';
+        }
+
+        function checkQuizAnswer() {
+            const userAns = parseInt(document.getElementById('quizAnswer').value);
+            const feedback = document.getElementById('quizFeedback');
+
+            if (isNaN(userAns)) {
+                feedback.innerText = "Жауапты жазыңыз!";
+                feedback.className = "text-center text-sm font-semibold text-orange-500 h-6";
+                return;
+            }
+
+            if (userAns === correctAnswer) {
+                feedback.innerText = "Дұрыс! 🌟";
+                feedback.className = "text-center text-sm font-semibold text-green-600 h-6";
+                currentScore++;
+            } else {
+                feedback.innerText = `Қате! Дұрыс жауап: ${correctAnswer}`;
+                feedback.className = "text-center text-sm font-semibold text-red-500 h-6";
+            }
+
+            currentQNum++;
+            setTimeout(startQuiz, 1500);
+        }
+
+        function resetQuiz() {
+            currentScore = 0;
+            currentQNum = 1;
+            location.reload();
+        }
+    </script>
+</body>
+</html>
